@@ -41,6 +41,20 @@ async function run() {
         const categoriesCollection = client.db('mobileGadgets').collection('categories');
         const bookingsCollection = client.db('mobileGadgets').collection('bookings');
         const usersCollection = client.db('mobileGadgets').collection('users');
+        const mobilesCollection = client.db('mobileGadgets').collection('mobiles');
+
+
+        const verifyAdmin = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
 
         app.get('/categories', async (req, res) => {
             const date = req.query.date;
@@ -160,7 +174,7 @@ async function run() {
             res.send(result);
         });
 
-        app.put('/users/admin/:id', verifyJWT, async (req, res) => {
+        app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const decodedEmail = req.decoded.email;
             const query = { email: decodedEmail };
             const user = await usersCollection.findOne(query);
@@ -179,8 +193,26 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
-        })
+        });
 
+        app.get('/mobiles', verifyJWT, verifyAdmin, async (req, res) => {
+            const query = {};
+            const mobiles = await mobilesCollection.find(query).toArray();
+            res.send(mobiles);
+        });
+
+        app.post('/mobiles', verifyJWT, async (req, res) => {
+            const mobile = req.body;
+            const result = await mobilesCollection.insertOne(mobile);
+            res.send(result);
+        });
+
+        app.delete('/mobiles/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await mobilesCollection.deleteOne(filter);
+            res.send(result);
+        })
 
     }
     finally {
