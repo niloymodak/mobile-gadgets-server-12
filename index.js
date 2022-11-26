@@ -162,7 +162,8 @@ async function run() {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
-            res.send({ isAdmin: user?.role === 'admin' });
+            // res.send({ isAdmin: user?.role === 'admin' });
+            res.send(user);
         })
 
         app.post('/users', async (req, res) => {
@@ -193,7 +194,7 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/mobiles', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/mobiles', verifyJWT, async (req, res) => {
             const query = {};
             const mobiles = await mobilesCollection.find(query).toArray();
             res.send(mobiles);
