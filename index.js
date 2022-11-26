@@ -145,8 +145,6 @@ async function run() {
             const email = req.query.email;
             const query = { email: email };
             const user = await usersCollection.findOne(query);
-            // console.log(user);
-            // res.json({ accessToken: 'token' });
             if (user) {
                 const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '5d' })
                 return res.send({ accessToken: token });
