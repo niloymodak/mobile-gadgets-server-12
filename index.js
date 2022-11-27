@@ -44,7 +44,7 @@ async function run() {
         const bookingsCollection = client.db('mobileGadgets').collection('bookings');
         const usersCollection = client.db('mobileGadgets').collection('users');
         const mobilesCollection = client.db('mobileGadgets').collection('mobiles');
-
+        const paymentsCollection = client.db('mobileGadgets').collection('payments');
 
         const verifyAdmin = async (req, res, next) => {
             const decodedEmail = req.decoded.email;
@@ -152,8 +152,8 @@ async function run() {
 
         app.post('/create-payment-intent', async (req, res) => {
             const booking = req.body;
-            const price = booking.price;
-            const amount = price * 100;
+            const resalePrice = booking.resalePrice;
+            const amount = resalePrice * 100;
 
             const paymentIntent = await stripe.paymentIntents.create({
                 currency: 'usd',
@@ -166,6 +166,22 @@ async function run() {
                 clientSecret: paymentIntent.client_secret,
             });
         });
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+            const id = payment.bookingId
+            const filter = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+            res.send(result);
+        })
+
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
