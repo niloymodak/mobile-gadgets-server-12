@@ -253,11 +253,17 @@ async function run() {
             const filter = { _id: ObjectId(id) };
             const result = await mobilesCollection.deleteOne(filter);
             res.send(result);
-        })
+        });
         app.delete('/user/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+        });
+        app.delete('/mobile/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await bookingsCollection.deleteOne(filter);
             res.send(result);
         })
 
